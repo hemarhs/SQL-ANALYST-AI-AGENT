@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask your data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f8f5fc; --panel:#ffffff; --panel2:#f4f0fb; --line:#e7e0f3;
+  --text:#2d2a3e; --mute:#7a7590; --violet:#8b7cf6; --teal:#3cbfae; --red:#e5677a; --amber:#c98a2b;
+  --r:16px; --shadow:0 6px 24px rgba(139,124,246,.12);
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font:15px/1.55 Inter,system-ui,sans-serif;color:var(--text);
+  background:radial-gradient(800px 480px at 90% -10%,rgba(196,181,253,.45),transparent 60%),
+             radial-gradient(700px 420px at -10% 0%,rgba(251,207,232,.45),transparent 60%),
+             radial-gradient(700px 420px at 50% 115%,rgba(167,243,208,.40),transparent 60%),var(--bg);
+  background-attachment:fixed}
+[hidden]{display:none!important}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.logo{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#f9a8d4,#c4b5fd 55%,#99f6e4);display:inline-block;flex:none}
+.brand{font:700 20px 'Space Grotesk';letter-spacing:-.02em;display:flex;gap:10px;align-items:center}
+
+/* ---------- auth ---------- */
+.authwrap{min-height:100%;display:grid;place-items:center;padding:24px}
+.authcard{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:32px;box-shadow:var(--shadow)}
+.authcard h1{font:700 26px/1.2 'Space Grotesk';letter-spacing:-.02em;margin:22px 0 6px}
+.authcard p.sub{color:var(--mute);margin-bottom:22px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--panel2);border-radius:12px;padding:4px;margin-bottom:20px}
+.seg button{border:0;background:none;padding:9px;border-radius:9px;color:var(--mute);font-weight:500}
+.seg button.on{background:#fff;color:var(--text);box-shadow:0 1px 6px rgba(139,124,246,.18)}
+label{display:block;font-size:13px;font-weight:500;margin:0 0 6px}
+input{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:11px;font:inherit;color:var(--text);background:#fff;margin-bottom:16px}
+input:focus{outline:0;border-color:var(--violet);box-shadow:0 0 0 3px rgba(139,124,246,.15)}
+.primary{width:100%;background:linear-gradient(135deg,#a394f8,#7c6cf0);color:#fff;border:0;border-radius:12px;padding:12px;font-weight:600}
+.primary:disabled{opacity:.6;cursor:wait}
+.autherr{color:var(--red);font-size:13.5px;margin:-4px 0 14px}
+
+/* ---------- app shell ---------- */
+.app{height:100dvh;display:grid;grid-template-columns:280px 1fr}
+aside{border-right:1px solid var(--line);background:rgba(255,255,255,.6);backdrop-filter:blur(8px);display:flex;flex-direction:column;min-height:0}
+.aside-top{padding:22px 18px 8px}
+.aside-top .sub{color:var(--mute);font-size:13px;margin:6px 0 0}
+.tables{flex:1;overflow:auto;padding:14px 18px}
+.tbl{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:var(--panel)}
+.tbl summary{cursor:pointer;padding:10px 12px;font:500 13.5px 'JetBrains Mono';display:flex;justify-content:space-between;list-style:none}
+.tbl summary::-webkit-details-marker{display:none}
+.tbl summary span{color:var(--mute);font-size:12px}
+.cols{padding:2px 12px 10px;font:12px 'JetBrains Mono'}
+.col{display:flex;justify-content:space-between;padding:3px 0}
+.col em{color:var(--mute);font-style:normal}.col b{color:var(--amber);font-weight:500}
+.me{border-top:1px solid var(--line);padding:14px 18px;display:flex;align-items:center;gap:10px}
+.av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#c4b5fd,#f9a8d4);display:grid;place-items:center;font-weight:600;color:#fff;flex:none}
+.me .who{flex:1;min-width:0}.me .who b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me .who span{font-size:12px;color:var(--mute);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ghost{background:#fff;border:1px solid var(--line);color:var(--mute);border-radius:10px;padding:6px 12px;font-size:13px}
+.ghost:hover{color:var(--text);border-color:var(--violet)}
+
+main{display:flex;flex-direction:column;min-height:0;min-width:0}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px min(5vw,40px);border-bottom:1px solid var(--line);background:rgba(255,255,255,.55);backdrop-filter:blur(8px)}
+.top h2{font:600 17px 'Space Grotesk'}
+.top .mobbrand{display:none}
+.thread{flex:1;overflow-y:auto;padding:28px min(5vw,40px);scroll-behavior:smooth}
+.col1{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+
+.empty{text-align:center;padding:9vh 0 0}
+.empty h1{font:700 clamp(26px,4vw,38px)/1.15 'Space Grotesk';letter-spacing:-.03em}
+.empty p{color:var(--mute);margin:10px auto 24px;max-width:50ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{background:#fff;border:1px solid var(--line);color:var(--mute);border-radius:99px;padding:7px 14px;font-size:13.5px}
+.chip:hover{color:var(--text);border-color:var(--violet)}
+
+.msg{display:flex;gap:12px;align-items:flex-start;min-width:0}
+.msg.user{justify-content:flex-end}
+.bubble{background:linear-gradient(135deg,#a99bf7,#8b7cf6);color:#fff;padding:10px 16px;border-radius:18px 18px 4px 18px;max-width:80%;overflow-wrap:anywhere}
+.msg .av{width:30px;height:30px;font-size:0;background:linear-gradient(135deg,#f9a8d4,#c4b5fd 55%,#99f6e4)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:4px 18px 18px 18px;box-shadow:var(--shadow);flex:1;min-width:0;overflow:hidden}
+.sec{padding:14px 18px;border-bottom:1px solid var(--line)}
+.sec:last-child{border:0}
+.answer{font-size:15.5px;line-height:1.6}
+.err{color:var(--red);padding:14px 18px}
+.tabs{display:flex;gap:4px;margin-bottom:10px}
+.tab{background:none;border:0;color:var(--mute);padding:5px 12px;border-radius:8px;font-weight:500}
+.tab.on{background:var(--panel2);color:var(--text)}
+.scroll{overflow:auto;max-height:340px;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:8px 14px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{position:sticky;top:0;background:var(--panel2);font:500 12px 'JetBrains Mono';color:var(--mute)}
+td.num{text-align:right;font:13px 'JetBrains Mono'}
+.chartwrap{height:280px}
+.foot{color:var(--mute);font-size:12.5px;margin-top:8px}
+details.more summary{cursor:pointer;color:var(--mute);font-size:13.5px;font-weight:500;list-style:none}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::before{content:"▸ ";}
+details.more[open] summary::before{content:"▾ ";}
+.trace{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.step{font:12px 'JetBrains Mono';padding:5px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);display:flex;gap:7px;align-items:center}
+.step::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--teal)}
+.step.bad::before{background:var(--red)}.step.fix{border-color:rgba(201,138,43,.5)}
+.step small{color:var(--mute)}
+.note{font:12px 'JetBrains Mono';color:var(--red);margin-bottom:8px}
+.sqlbox{position:relative}
+pre{font:13px/1.6 'JetBrains Mono';background:#faf8ff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;color:#3b3552}
+.k{color:#7c6cf0;font-weight:500}.n{color:#d9822b}.s{color:#1f9d8e}
+.copy{position:absolute;top:8px;right:8px;background:#fff;color:var(--mute);border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12px}
+.typing{display:flex;gap:5px;padding:16px 18px}
+.typing i{width:8px;height:8px;border-radius:50%;background:var(--violet);opacity:.35;animation:b 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+
+.dock{padding:12px min(5vw,40px) 20px}
+.composer{max-width:860px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:18px;padding:10px 10px 10px 16px;display:flex;gap:10px;align-items:flex-end;box-shadow:var(--shadow)}
+.composer:focus-within{border-color:var(--violet)}
+textarea{flex:1;background:none;border:0;outline:0;color:var(--text);font:inherit;resize:none;min-height:26px;max-height:140px;padding:6px 0}
+.send{background:linear-gradient(135deg,#a394f8,#7c6cf0);color:#fff;border:0;border-radius:12px;padding:10px 18px;font-weight:600;flex:none}
+.send:disabled{opacity:.5;cursor:wait}
+.hint{max-width:860px;margin:8px auto 0;text-align:center;color:var(--mute);font-size:12px}
+
+.src{padding:6px 18px 0}
+.src .seg{margin-bottom:12px}
+.drop{display:block;border:1.5px dashed var(--violet);border-radius:14px;padding:14px;text-align:center;cursor:pointer;background:rgba(139,124,246,.06)}
+.drop:hover,.drop.over{background:rgba(139,124,246,.16)}
+.drop b{display:block;font-weight:600}.drop span{color:var(--mute);font-size:12.5px}
+.upmsg{font-size:12.5px;color:#1f9d8e;margin-top:8px;overflow-wrap:anywhere}.upmsg.bad{color:var(--red)}
+.del{background:none;border:0;color:var(--mute);font-size:16px;line-height:1;padding:0 0 0 8px}
+.del:hover{color:var(--red)}
+.emptytbl{color:var(--mute);font-size:13px;padding:4px 2px}
+.scrim{display:none;position:fixed;inset:0;background:rgba(45,42,62,.35);z-index:25}
+.empty .primary{width:auto;padding:12px 26px}
+@media(max-width:820px){
+  .app{grid-template-columns:1fr}
+  aside{display:none}
+  .app.drawer aside{display:flex;position:fixed;inset:0 auto 0 0;width:min(86vw,320px);z-index:30;background:#fff;box-shadow:8px 0 40px rgba(45,42,62,.2)}
+  .app.drawer .scrim{display:block}
+  .top .mobbrand{display:flex}.top h2{display:none}
+  .bubble{max-width:90%}
+  .msg .av{display:none}
+}
+@media(prefers-reduced-motion:reduce){.typing i{animation:none;opacity:.7}.thread{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH ============ -->
+<section id="auth" class="authwrap" hidden>
+  <div class="authcard">
+    <div class="brand"><span class="logo"></span>Ask your data</div>
+    <h1 id="authTitle">Welcome back</h1>
+    <p class="sub" id="authSub">Log in to keep your chat history.</p>
+    <div class="seg" role="tablist">
+      <button id="tabLogin" class="on" type="button">Log in</button>
+      <button id="tabSignup" type="button">Sign up</button>
+    </div>
+    <form id="authForm" novalidate>
+      <div id="nameRow" hidden><label for="name">Name</label><input id="name" autocomplete="name" placeholder="Your name"></div>
+      <label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com">
+      <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" placeholder="At least 8 characters">
+      <div class="autherr" id="autherr" hidden></div>
+      <button class="primary" id="authBtn" type="submit">Log in</button>
+    </form>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="app" class="app" hidden>
+  <div class="scrim" id="scrim"></div>
+  <aside>
+    <div class="aside-top">
+      <div class="brand"><span class="logo"></span>Ask your data</div>
+      <p class="sub" id="srcSub">Sample e-commerce database · read-only</p>
+    </div>
+    <div class="src">
+      <div class="seg" id="srcSeg">
+        <button type="button" data-s="sample" class="on">Sample shop</button>
+        <button type="button" data-s="mine">My data</button>
+      </div>
+      <div id="uploadBox" hidden>
+        <div class="drop" id="drop" tabindex="0" role="button" aria-label="Upload a CSV file">
+          <b>Upload a CSV</b><span>Drop a file or click · max 5 MB</span>
+        </div>
+        <input type="file" id="file" accept=".csv,.tsv,.txt" hidden>
+        <div class="upmsg" id="upmsg" hidden></div>
+      </div>
+    </div>
+    <div class="tables" id="schema"></div>
+    <div class="me">
+      <div class="av" id="avatar"></div>
+      <div class="who"><b id="uname"></b><span id="uemail"></span></div>
+      <button class="ghost" id="logout">Log out</button>
+    </div>
+  </aside>
+  <main>
+    <header class="top">
+      <div class="brand mobbrand"><span class="logo"></span>Ask your data</div>
+      <h2 id="srcLabel">Chat</h2>
+      <div style="display:flex;gap:8px">
+        <button class="ghost" id="clear">Clear chat</button>
+        <button class="ghost mobbrand" id="menu">Data</button>
+        <button class="ghost mobbrand" id="logout2">Log out</button>
+      </div>
+    </header>
+    <div class="thread" id="thread"><div class="col1" id="msgs"></div></div>
+    <div class="dock">
+      <div class="composer">
+        <textarea id="q" rows="1" maxlength="500" aria-label="Your question" placeholder="Ask about customers, orders, revenue…"></textarea>
+        <button class="send" id="go">Send</button>
+      </div>
+      <p class="hint">Enter to send · Shift+Enter for a new line</p>
+    </div>
+  </main>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let token = localStorage.getItem('sqa_token'), examples = [], mode = 'login', busy = false;
+let source = 'sample', currentTables = [];
+
+/* ---------- api ---------- */
+async function api(path, opts = {}) {
+  const r = await fetch(path, {...opts, headers: {'Content-Type':'application/json', ...(token ? {Authorization:'Bearer '+token} : {})}});
+  let d = {}; try { d = await r.json(); } catch {}
+  if (r.status === 401 && token) { logout(); throw new Error('Session expired. Please log in again.'); }
+  if (!r.ok) throw new Error(typeof d.detail === 'string' ? d.detail : (d.detail?.[0]?.msg || 'Request failed'));
+  return d;
+}
+
+/* ---------- auth ---------- */
+function setMode(m) {
+  mode = m;
+  const su = m === 'signup';
+  $('#tabLogin').classList.toggle('on', !su); $('#tabSignup').classList.toggle('on', su);
+  $('#nameRow').hidden = !su;
+  $('#authTitle').textContent = su ? 'Create your account' : 'Welcome back';
+  $('#authSub').textContent = su ? 'Sign up to save your chats and queries.' : 'Log in to keep your chat history.';
+  $('#authBtn').textContent = su ? 'Create account' : 'Log in';
+  $('#pw').autocomplete = su ? 'new-password' : 'current-password';
+  $('#autherr').hidden = true;
+}
+$('#tabLogin').onclick = () => setMode('login');
+$('#tabSignup').onclick = () => setMode('signup');
+function authError(m) { const e = $('#autherr'); e.textContent = m; e.hidden = false; }
+
+$('#authForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = $('#name').value.trim(), email = $('#email').value.trim(), password = $('#pw').value;
+  if (mode === 'signup' && !name) return authError('Enter your name.');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return authError('Enter a valid email address.');
+  if (mode === 'signup' && password.length < 8) return authError('Password must be at least 8 characters.');
+  if (!password) return authError('Enter your password.');
+  $('#authBtn').disabled = true; $('#autherr').hidden = true;
+  try {
+    const d = await api(mode === 'signup' ? '/api/signup' : '/api/login', {method:'POST', body: JSON.stringify({name, email, password})});
+    token = d.token; localStorage.setItem('sqa_token', token);
+    await showApp(d.user);
+  } catch (err) { authError(err.message); }
+  $('#authBtn').disabled = false;
+});
+
+function logout() {
+  token = null; localStorage.removeItem('sqa_token');
+  $('#app').hidden = true; $('#auth').hidden = false; $('#pw').value = '';
+}
+$('#logout').onclick = logout; $('#logout2').onclick = logout;
+
+/* ---------- SQL highlight (single pass) ---------- */
+const KWS = 'SELECT|FROM|WHERE|GROUP BY|ORDER BY|LIMIT|JOIN|LEFT|INNER|ON|AS|AND|OR|NOT|IN|WITH|HAVING|DESC|ASC|CASE|WHEN|THEN|ELSE|END|COUNT|SUM|AVG|MIN|MAX|ROUND|DISTINCT|BETWEEN|LIKE|IS|NULL|UNION|OVER|PARTITION BY|CAST|strftime';
+const TOK = new RegExp("('[^']*')|\\b(" + KWS + ")\\b|\\b(\\d+(?:\\.\\d+)?)\\b", 'gi');
+const hl = sql => esc(sql).replace(TOK, (m, s, k, n) => s ? `<span class="s">${s}</span>` : k ? `<span class="k">${k}</span>` : `<span class="n">${n}</span>`);
+
+/* ---------- chat rendering ---------- */
+const msgs = $('#msgs'), thread = $('#thread');
+const toBottom = () => requestAnimationFrame(() => thread.scrollTo({top: thread.scrollHeight}));
+const fmt = v => v === null ? '—' : (typeof v === 'number' ? v.toLocaleString(undefined, {maximumFractionDigits: 2}) : esc(v));
+
+function addUser(q) {
+  const d = document.createElement('div'); d.className = 'msg user';
+  d.innerHTML = `<div class="bubble">${esc(q)}</div>`; msgs.appendChild(d); toBottom();
+}
+function botShell(inner) {
+  const d = document.createElement('div'); d.className = 'msg';
+  d.innerHTML = `<div class="av"></div><div class="card">${inner}</div>`; msgs.appendChild(d); toBottom(); return d;
+}
+function renderBot(d, host) {
+  const card = host.querySelector('.card');
+  const steps = d.trace.map(s => `<div class="step ${s.ok ? '' : 'bad'} ${s.step === 'Repair SQL' ? 'fix' : ''}">${esc(s.step)} <small>${s.ms ? s.ms + 'ms' : ''}</small></div>`).join('');
+  const notes = d.trace.filter(s => !s.ok && s.note).map(s => `<div class="note">${esc(s.step)}: ${esc(s.note)}</div>`).join('');
+  const {columns: cols, rows} = d;
+  const isNum = i => rows.every(r => typeof r[i] === 'number');
+  const table = `<div class="scroll"><table><thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${
+    rows.map(r => `<tr>${r.map((v, i) => `<td class="${isNum(i) ? 'num' : ''}">${fmt(v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  card.innerHTML = `
+    <div class="sec answer">${esc(d.answer)}</div>
+    ${rows.length ? `<div class="sec">
+      <div class="tabs"><button class="tab on" data-t="table">Table</button>${d.chart ? '<button class="tab" data-t="chart">Chart</button>' : ''}</div>
+      <div data-p="table">${table}</div>
+      ${d.chart ? '<div class="chartwrap" data-p="chart" hidden><canvas></canvas></div>' : ''}
+      <p class="foot">${rows.length} row${rows.length === 1 ? '' : 's'} · ${(d.total_ms / 1000).toFixed(1)}s · ${d.source === 'mine' ? 'My data' : 'Sample shop'}</p></div>` : ''}
+    <div class="sec"><details class="more"><summary>SQL and agent steps</summary>
+      <div class="trace">${steps}</div>${notes}
+      <div class="sqlbox"><button class="copy">Copy</button><pre>${hl(d.sql)}</pre></div></details></div>`;
+  card.querySelector('.copy').onclick = e => { navigator.clipboard.writeText(d.sql); e.target.textContent = 'Copied'; setTimeout(() => e.target.textContent = 'Copy', 1200); };
+  card.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+    card.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+    card.querySelectorAll('[data-p]').forEach(p => p.hidden = p.dataset.p !== t.dataset.t);
+    if (t.dataset.t === 'chart' && !card._chart) drawChart(d, card);
+  });
+  toBottom();
+}
+function drawChart(d, card) {
+  const c = d.chart, line = c.type === 'line';
+  card._chart = new Chart(card.querySelector('canvas'), {
+    type: c.type,
+    data: {labels: d.rows.map(r => String(r[c.x])), datasets: [{label: d.columns[c.y], data: d.rows.map(r => r[c.y]),
+      borderColor: '#3cbfae', backgroundColor: line ? 'rgba(60,191,174,.18)' : '#b4a7f8', fill: line, tension: .3, borderRadius: 6, pointRadius: line ? 3 : 0}]},
+    options: {maintainAspectRatio: false, plugins: {legend: {display: false}},
+      scales: {x: {ticks: {color: '#7a7590'}, grid: {display: false}}, y: {ticks: {color: '#7a7590'}, grid: {color: '#e7e0f3'}}}}
+  });
+}
+function showEmpty() {
+  if (source === 'mine' && !currentTables.length) {
+    msgs.innerHTML = `<div class="empty"><h1>Bring your own data</h1>
+      <p>Upload a CSV and ask questions about it in plain English. Your files are private to your account.</p>
+      <button class="primary" id="emptyUp">Upload a CSV</button></div>`;
+    $('#emptyUp').onclick = () => $('#file').click();
+    return;
+  }
+  msgs.innerHTML = `<div class="empty"><h1>What do you want to know?</h1>
+    <p>Ask in plain English. I'll write the SQL, run it safely, and explain the result.</p>
+    <div class="chips">${examples.map(e => `<button class="chip">${esc(e)}</button>`).join('')}</div></div>`;
+  msgs.querySelectorAll('.chip').forEach(b => b.onclick = () => { $('#q').value = b.textContent; send(); });
+}
+
+/* ---------- actions ---------- */
+async function send() {
+  const q = $('#q').value.trim();
+  if (q.length < 3 || busy) return;
+  busy = true; $('#go').disabled = true;
+  msgs.querySelector('.empty')?.remove();
+  addUser(q); $('#q').value = ''; autosize();
+  const host = botShell('<div class="typing"><i></i><i></i><i></i></div>');
+  try {
+    renderBot(await api('/api/ask', {method: 'POST', body: JSON.stringify({question: q, source})}), host);
+  } catch (e) { host.querySelector('.card').innerHTML = `<div class="err">${esc(e.message)}</div>`; toBottom(); }
+  busy = false; $('#go').disabled = false; $('#q').focus();
+}
+$('#go').onclick = send;
+$('#q').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+const autosize = () => { const t = $('#q'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 140) + 'px'; };
+$('#q').addEventListener('input', autosize);
+
+$('#clear').onclick = async () => {
+  if (!confirm('Clear this whole chat? This cannot be undone.')) return;
+  await api('/api/history', {method: 'DELETE'}); showEmpty();
+};
+
+async function loadSchema() {
+  const s = await api('/api/schema?source=' + source);
+  examples = s.examples; currentTables = s.tables;
+  const mine = source === 'mine';
+  $('#schema').innerHTML = s.tables.length ? s.tables.map(t => `<details class="tbl"><summary>${esc(t.table)}<span>${t.rows.toLocaleString()}${mine ? `<button class="del" data-t="${esc(t.table)}" title="Remove table" aria-label="Remove ${esc(t.table)}">×</button>` : ''}</span></summary>
+    <div class="cols">${t.columns.map(c => `<div class="col"><span>${c.pk ? '<b>pk </b>' : ''}${esc(c.name)}</span><em>${esc(c.type.toLowerCase())}</em></div>`).join('')}</div></details>`).join('')
+    : (mine ? '<p class="emptytbl">No tables yet. Upload a CSV above.</p>' : '');
+  document.querySelectorAll('.del').forEach(b => b.onclick = async e => {
+    e.preventDefault(); e.stopPropagation();
+    if (!confirm(`Remove "${b.dataset.t}" from your data?`)) return;
+    try { await api('/api/tables/' + encodeURIComponent(b.dataset.t), {method: 'DELETE'}); clearUpMsg(); await loadSchema(); if (!msgs.querySelector('.msg')) showEmpty(); }
+    catch (err) { alert(err.message); }
+  });
+}
+
+async function setSource(s, silent) {
+  source = s; localStorage.setItem('sqa_source', s);
+  document.querySelectorAll('#srcSeg button').forEach(b => b.classList.toggle('on', b.dataset.s === s));
+  $('#uploadBox').hidden = s !== 'mine';
+  clearUpMsg();
+  $('#srcSub').textContent = s === 'mine' ? 'Your uploaded files · private to you' : 'Sample e-commerce database · read-only';
+  $('#srcLabel').textContent = s === 'mine' ? 'Chat · My data' : 'Chat · Sample shop';
+  await loadSchema();
+  if (!silent && !msgs.querySelector('.msg')) showEmpty();
+}
+document.querySelectorAll('#srcSeg button').forEach(b => b.onclick = () => setSource(b.dataset.s));
+
+let upTimer;
+function clearUpMsg() { clearTimeout(upTimer); const b = $('#upmsg'); b.hidden = true; b.textContent = ''; }
+
+async function uploadFile(f) {
+  if (!f) return;
+  const box = $('#upmsg'); box.hidden = false; box.className = 'upmsg'; box.textContent = 'Uploading ' + f.name + '…';
+  try {
+    const r = await fetch('/api/upload?filename=' + encodeURIComponent(f.name), {method: 'POST', body: f,
+      headers: {Authorization: 'Bearer ' + token, 'Content-Type': 'application/octet-stream'}});
+    let d = {}; try { d = await r.json(); } catch {}
+    if (r.status === 401) { logout(); return; }
+    if (!r.ok) throw new Error(typeof d.detail === 'string' ? d.detail : 'Upload failed');
+    box.textContent = `Loaded "${d.table}": ${d.rows.toLocaleString()} rows, ${d.columns.length} columns.`;
+    clearTimeout(upTimer); upTimer = setTimeout(clearUpMsg, 6000);
+    await loadSchema();
+    if (!msgs.querySelector('.msg')) showEmpty();
+  } catch (e) { box.className = 'upmsg bad'; box.textContent = e.message; }
+  $('#file').value = '';
+}
+const drop = $('#drop');
+drop.onclick = () => $('#file').click();
+drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#file').click(); } });
+$('#file').addEventListener('change', e => uploadFile(e.target.files[0]));
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => uploadFile(e.dataTransfer.files[0]));
+
+const drawer = open => $('#app').classList.toggle('drawer', open);
+$('#menu').onclick = () => drawer(true);
+$('#scrim').onclick = () => drawer(false);
+
+async function showApp(user) {
+  $('#auth').hidden = true; $('#app').hidden = false;
+  $('#uname').textContent = user.name; $('#uemail').textContent = user.email; $('#avatar').textContent = user.name[0].toUpperCase();
+  const h = await api('/api/history');
+  await setSource(localStorage.getItem('sqa_source') === 'mine' ? 'mine' : 'sample', true);
+  msgs.innerHTML = '';
+  if (!h.length) showEmpty();
+  h.forEach(m => { addUser(m.question); const host = botShell(''); renderBot(m.payload, host); });
+  toBottom(); $('#q').focus();
+}
+
+(async function boot() {
+  if (!token) { $('#auth').hidden = false; return; }
+  try { await showApp(await api('/api/me')); } catch { $('#auth').hidden = false; }
+})();
+</script>
+</body>
+</html>

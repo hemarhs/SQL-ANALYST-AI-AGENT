@@ -1,0 +1,21 @@
+# secrets
+.env
+backend/.env
+
+# generated database
+backend/shop.db
+*.db
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# os / editor
+.DS_Store
+.vscode/
+.idea/
+
+# build
+*.zip
