@@ -8,6 +8,7 @@ load_dotenv()
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request  # noqa: E402
 from starlette.concurrency import run_in_threadpool  # noqa: E402
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
@@ -18,6 +19,26 @@ import db  # noqa: E402
 db.seed()
 auth.init()
 app = FastAPI(title="Text-to-SQL Data Analyst")
+
+# CORS: lets the Vercel frontend (a different domain) call this API from the browser.
+# Auth uses an Authorization header, not cookies. Only the origins listed here are allowed.
+# Override on Render with ALLOWED_ORIGINS="https://a.vercel.app,https://b.example.com" (comma-separated).
+DEFAULT_ORIGINS = [
+    "https://sql-analyst-ai-agent.vercel.app",  # production frontend
+    "http://localhost:8080",                     # local run
+    "http://127.0.0.1:8080",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+_env = os.getenv("ALLOWED_ORIGINS", "")
+ALLOWED_ORIGINS = [o.strip().rstrip("/") for o in _env.split(",") if o.strip()] or DEFAULT_ORIGINS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
+    max_age=600,
+)
 
 EXAMPLES = [
     "Monthly revenue for 2025",
