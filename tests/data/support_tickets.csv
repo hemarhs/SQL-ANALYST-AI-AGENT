@@ -1,0 +1,7 @@
+ticket_id,opened,priority,status,team,resolution_hours
+T-100,2025-03-01,high,resolved,Platform,4.5
+T-101,2025-03-03,low,resolved,Billing,22.0
+T-102,2025-03-05,medium,open,Platform,
+T-103,2025-03-09,high,resolved,Mobile,2.25
+T-104,2025-03-12,low,closed,Billing,31.5
+T-105,2025-03-15,medium,resolved,Platform,9.75

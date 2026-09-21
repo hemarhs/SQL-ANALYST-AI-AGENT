@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Install dependencies",
+      "type": "shell",
+      "command": "${command:python.interpreterPath} -m pip install -r requirements.txt",
+      "options": {"cwd": "${workspaceFolder}"},
+      "problemMatcher": []
+    },
+    {
+      "label": "Start server",
+      "type": "shell",
+      "command": "${command:python.interpreterPath} -m uvicorn main:app --reload --port 8080",
+      "options": {"cwd": "${workspaceFolder}/backend"},
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {"panel": "dedicated", "clear": true}
+    },
+    {
+      "label": "Run API tests",
+      "type": "shell",
+      "command": "${command:python.interpreterPath} tests/test_app.py",
+      "options": {"cwd": "${workspaceFolder}"},
+      "group": {"kind": "test", "isDefault": true},
+      "problemMatcher": []
+    },
+    {
+      "label": "Run browser tests",
+      "type": "shell",
+      "command": "${command:python.interpreterPath} tests/ui_test.py",
+      "options": {"cwd": "${workspaceFolder}"},
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

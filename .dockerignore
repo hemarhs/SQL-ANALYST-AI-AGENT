@@ -3,6 +3,12 @@ backend/.env
 *.db
 backend/data/
 __pycache__/
+**/__pycache__/
 .git
+.github
 .venv
 venv
+tests/shots
+tests/__pycache__
+*.md
+!README.md

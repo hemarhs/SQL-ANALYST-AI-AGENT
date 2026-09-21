@@ -2,9 +2,9 @@
 .env
 backend/.env
 
-# generated database
-backend/shop.db
+# generated databases
 *.db
+backend/data/
 
 # python
 __pycache__/
@@ -12,10 +12,13 @@ __pycache__/
 .venv/
 venv/
 
+# test artefacts
+tests/shots/
+
 # os / editor
 .DS_Store
-.vscode/
 .idea/
+# .vscode/ is intentionally tracked: launch + task configs for contributors
 
 # build
 *.zip

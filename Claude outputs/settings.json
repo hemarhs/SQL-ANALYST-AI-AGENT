@@ -1,0 +1,19 @@
+{
+  "python.analysis.extraPaths": ["backend"],
+  "python.analysis.autoSearchPaths": true,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "tests/shots": true
+  },
+  "files.associations": {
+    "*.env.example": "dotenv"
+  },
+  "[python]": {
+    "editor.rulers": [110]
+  },
+  "[html]": {
+    "editor.rulers": [120],
+    "editor.wordWrap": "off"
+  }
+}

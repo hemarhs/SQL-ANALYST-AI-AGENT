@@ -3,18 +3,23 @@ import base64
 import hashlib
 import hmac
 import json
+import logging
 import os
 import secrets
 import sqlite3
 import time
 from pathlib import Path
 
-APP_DB = Path(__file__).parent / "app.db"
+STORAGE = Path(os.getenv("DATA_DIR") or Path(__file__).parent)
+APP_DB = STORAGE / "app.db"
 TOKEN_TTL = 7 * 24 * 3600
+DEV_SECRET = "dev-secret-change-me"
+
+log = logging.getLogger("uvicorn.error")
 
 
 def _secret() -> bytes:
-    return os.getenv("APP_SECRET", "dev-secret-change-me").encode()
+    return os.getenv("APP_SECRET", DEV_SECRET).encode()
 
 
 def conn() -> sqlite3.Connection:
@@ -36,6 +41,9 @@ def init() -> None:
             CREATE INDEX IF NOT EXISTS idx_msg_user ON messages(user_id, id);
             """
         )
+    if os.getenv("APP_SECRET", DEV_SECRET) == DEV_SECRET:
+        log.warning("APP_SECRET is unset — using the development default. "
+                    "Set APP_SECRET in production or every login token is forgeable.")
 
 
 def hash_pw(pw: str) -> str:
