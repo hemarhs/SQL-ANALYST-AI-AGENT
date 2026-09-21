@@ -216,6 +216,8 @@ textarea{flex:1;background:none;border:0;outline:0;color:var(--text);font:inheri
 </div>
 
 <script>
+const API_URL = "https://sql-analyst-ai-agent.onrender.com";
+
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let token = localStorage.getItem('sqa_token'), examples = [], mode = 'login', busy = false;
@@ -223,7 +225,7 @@ let source = 'sample', currentTables = [];
 
 /* ---------- api ---------- */
 async function api(path, opts = {}) {
-  const r = await fetch(path, {...opts, headers: {'Content-Type':'application/json', ...(token ? {Authorization:'Bearer '+token} : {})}});
+  const r = await fetch(API_URL + path, {...opts, headers: {'Content-Type':'application/json', ...(token ? {Authorization:'Bearer '+token} : {})}});
   let d = {}; try { d = await r.json(); } catch {}
   if (r.status === 401 && token) { logout(); throw new Error('Session expired. Please log in again.'); }
   if (!r.ok) throw new Error(typeof d.detail === 'string' ? d.detail : (d.detail?.[0]?.msg || 'Request failed'));
@@ -393,7 +395,7 @@ async function uploadFile(f) {
   if (!f) return;
   const box = $('#upmsg'); box.hidden = false; box.className = 'upmsg'; box.textContent = 'Uploading ' + f.name + '…';
   try {
-    const r = await fetch('/api/upload?filename=' + encodeURIComponent(f.name), {method: 'POST', body: f,
+    const r = await fetch(API_URL + '/api/upload?filename=' + encodeURIComponent(f.name), {method: 'POST', body: f,
       headers: {Authorization: 'Bearer ' + token, 'Content-Type': 'application/octet-stream'}});
     let d = {}; try { d = await r.json(); } catch {}
     if (r.status === 401) { logout(); return; }
