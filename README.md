@@ -81,9 +81,6 @@ Generate a secret with `python -c "import secrets; print(secrets.token_hex(32))"
 python -m uvicorn main:app --reload --port 8080
 ```
 
-Open <http://localhost:8080>, sign up, and start asking. The first start takes up to a minute while
-the libraries load.
-
 > `.env` is read only at startup. Restart the server after editing it.
 
 ### Docker
