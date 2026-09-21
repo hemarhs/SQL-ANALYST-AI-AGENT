@@ -5,8 +5,6 @@ writes the SQL, runs it against a read-only sandbox, repairs its own mistakes, a
 the result with a table and a chart. Query the built-in sample shop, or upload your own CSV
 files and pick which one to work with.
 
-[**Live demo**](https://sql-analyst-ai-agent.onrender.com) · the free instance sleeps after 15 minutes, so the
-first request can take up to a minute to wake it.
 
 ![Asking a question about an uploaded CSV](docs/answer-light.png)
 
