@@ -5,6 +5,22 @@ writes the SQL, runs it against a read-only sandbox, repairs its own mistakes, a
 the result with a table and a chart. Query the built-in sample shop, or upload your own CSV
 files and pick which one to work with.
 
+[**Live demo**](https://sql-analyst-ai-agent.onrender.com) · the free instance sleeps after 15 minutes, so the
+first request can take up to a minute to wake it.
+
+![Asking a question about an uploaded CSV](docs/answer-light.png)
+
+<table>
+  <tr>
+    <td><img src="docs/chart-light.png" alt="Automatic chart for a grouped result"></td>
+    <td><img src="docs/dark.png" alt="Dark theme"></td>
+  </tr>
+  <tr>
+    <td align="center"><em>Charts are chosen automatically — line for a time series, bar otherwise</em></td>
+    <td align="center"><em>Light and dark themes</em></td>
+  </tr>
+</table>
+
 ---
 
 ## Features
@@ -131,7 +147,8 @@ backend/
   .env.example
 frontend/
   index.html     the whole UI (auth, dataset panel, chat, charts)
-  vendor/        Chart.js, served locally rather than from a CDN
+  vendor/        Chart.js, the local fallback when the CDN is unreachable
+docs/            screenshots used by this README
 tests/
   test_app.py    API + ingestion + safety suite
   ui_test.py     Playwright browser suite
